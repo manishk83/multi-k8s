@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: redpostgresis
+    template:
+      metadata:
+        lables:
+          component: postgres
+      spec:
+        volumes:
+          name: postgres-storage
+          claimName: database-persistent-volume-claims # metadata name of persistent-volume-claims.yaml
+        containers:
+          - name: postgres
+            image: postgres
+            ports:
+              - containerPort: 6379
+            volumeMounts:
+              - name: postgres-storage
+                mountPath: /var/lib/postgresql/data #which data directory should be stored in the persistent volume
+                subPath: postgres
+            env:
+              - name:PGPASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: pgapssword
+                    key: PGPASSWORD
